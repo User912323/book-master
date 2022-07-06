@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import com.book.Entity.Book;
 import com.book.Repository.BookRepository;
 import com.book.Store;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
@@ -27,7 +28,6 @@ import org.springframework.core.io.UrlResource;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 
@@ -69,9 +69,9 @@ public class BookService {
         }
     }
 
-    public String move(MultipartFile file) throws IOException {
+    public String move(File file) throws IOException {
 
-        Path path = Paths.get("C:\\Users\\dartmedia\\Documents\\Office\\Excel\\tes\\"+ file.getOriginalFilename());
+        Path path = Paths.get("C:\\Me\\Spring\\Excel\\book-master\\upload\\Tes\\"+ file.getName());
 
 
         if (Files.exists(path)) {
@@ -79,8 +79,8 @@ public class BookService {
         }
 
         if (Files.notExists(path)) {
-            Path temp = Files.move(Paths.get("C:\\Me\\Spring\\Excel\\book-master\\upload\\" + file.getOriginalFilename()),
-                    Paths.get("C:\\Me\\Spring\\Excel\\book-master\\upload\\Tes\\"+ file.getOriginalFilename()));
+            Path temp = Files.move(Paths.get("C:\\Me\\Spring\\Excel\\book-master\\upload\\" + file.getName()),
+                    Paths.get("C:\\Me\\Spring\\Excel\\book-master\\upload\\Tes\\"+ file.getName()));
 
             System.out.println("file is not exist ");
             System.out.println("File renamed and moved successfully");
@@ -91,12 +91,12 @@ public class BookService {
 
 
     @Async("asyncExecutor")
-    public List<Store> save(MultipartFile file) throws InterruptedException {
+    public List<Store> save(File file) throws InterruptedException, IOException {
 
         List<Store> stores = new ArrayList<>();
         try {
 
-            XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream());
+            XSSFWorkbook workbook = new XSSFWorkbook(file);
 
             // Read student data form excel file sheet1.
             XSSFSheet worksheet = workbook.getSheetAt(0);
@@ -133,8 +133,12 @@ public class BookService {
 
         } catch (IOException e) {
             throw new RuntimeException("fail to store excel data: " + e.getMessage());
+        } catch (InvalidFormatException e) {
+            e.printStackTrace();
         }
-        Thread.sleep(1000L);  //Intentional delay
+        Thread.sleep(1000L);
+        move(file);
+        //Intentional delay
         log.info("Post completed");
         return stores;
     }

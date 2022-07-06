@@ -40,9 +40,9 @@ public class Configuration implements AsyncConfigurer {
     @Bean(name = "asyncExecutor")
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(10);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(10);
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(1);
+        executor.setQueueCapacity(1);
         executor.initialize();
         return executor;
     }
@@ -68,8 +68,8 @@ public class Configuration implements AsyncConfigurer {
     @Autowired
     BookService bookService;
 
-    @Scheduled(initialDelay = 2000, fixedRate = 3000)
-    @Async
+    @Scheduled(fixedDelay = 20000, initialDelay = 3000)
+//    @Async
     public void refreshPricingParameters() {
 //        File file = new File("C:\\Users\\dartmedia\\Documents\\Office\\Excel\\tes\\Tutorial");
 //        File file = new File(String.valueOf(bookService.root));
@@ -85,10 +85,13 @@ public class Configuration implements AsyncConfigurer {
             File file = new File(  "upload\\" + filename);
             if (file.exists()) {
                 System.out.println("ada");
+                System.out.println(file.getAbsolutePath());
                 try {
-                    bookService.save((MultipartFile) file);
-                    bookService.move((MultipartFile) file);
-                } catch (InterruptedException | IOException e) {
+
+                    bookService.save(file);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
 
